@@ -1,0 +1,12 @@
+torch
+pillow
+tensorflow
+matplotlib
+torchvision
+PyYAML
+uvicorn
+fastapi
+opencv-python
+numpy
+starlette
+google
