@@ -111,8 +111,100 @@ image = cv2.imread('/home/whoisltd/Desktop/as1.jpg')
 detector = Detector('/home/whoisltd/detect/training/exported-models/my_model/pipeline.config', '/home/whoisltd/detect/training/exported-models/my_model/checkpoint/ckpt-0', '/home/whoisltd/detect/label_map.pbxt')
 start = time.time()
 image, original_image, coordinate_dict = detector.predict(image)
+
+def get_center_point(coordinate_dict):
+    di = dict()
+
+    for key in coordinate_dict.keys():
+        xmin, ymin, xmax, ymax = coordinate_dict[key]
+        x_center = (xmin + xmax) / 2
+        y_center = (ymin + ymax) / 2
+        di[key] = (x_center, y_center)
+
+    return di
+
+def find_miss_corner(coordinate_dict):
+    dict_corner = {'top_left': 0, 'top_right':1, 'bottom_left':2, 'bottom_right':3}
+    for key in dict_corner.keys():
+        if key not in coordinate_dict.keys():
+            return dict_corner[key]
+
+# def find_miss_corner(coordinate_dict):
+#     position_name = ['top_left', 'top_right', 'bottom_left', 'bottom_right']
+#     position_index = np.array([0, 0, 0, 0])
+
+#     for name in coordinate_dict.keys():
+#         if name in position_name:
+#             position_index[position_name.index(name)] = 1
+
+#     index = np.argmin(position_index)
+
+#     return index
+
+def calculate_missed_coord_corner(coordinate_dict):
+    thresh = 0
+
+    index = find_miss_corner(coordinate_dict)
+
+    # calculate missed corner coordinate
+    # case 1: missed corner is "top_left"
+    if index == 0:
+        midpoint = np.add(coordinate_dict['top_right'], coordinate_dict['bottom_left']) / 2
+        y = 2 * midpoint[1] - coordinate_dict['bottom_right'][1] - thresh
+        x = 2 * midpoint[0] - coordinate_dict['bottom_right'][0] - thresh
+        coordinate_dict['top_left'] = (x, y)
+    elif index == 1:  # "top_right"
+        midpoint = np.add(coordinate_dict['top_left'], coordinate_dict['bottom_right']) / 2
+        y = 2 * midpoint[1] - coordinate_dict['bottom_left'][1] - thresh
+        x = 2 * midpoint[0] - coordinate_dict['bottom_left'][0] - thresh
+        coordinate_dict['top_right'] = (x, y)
+    elif index == 2:  # "bottom_left"
+        midpoint = np.add(coordinate_dict['top_left'], coordinate_dict['bottom_right']) / 2
+        y = 2 * midpoint[1] - coordinate_dict['top_right'][1] - thresh
+        x = 2 * midpoint[0] - coordinate_dict['top_right'][0] - thresh
+        coordinate_dict['bottom_left'] = (x, y)
+    elif index == 3:  # "bottom_right"
+        midpoint = np.add(coordinate_dict['bottom_left'], coordinate_dict['top_right']) / 2
+        y = 2 * midpoint[1] - coordinate_dict['top_left'][1] - thresh
+        x = 2 * midpoint[0] - coordinate_dict['top_left'][0] - thresh
+        coordinate_dict['bottom_right'] = (x, y)
+
+    return coordinate_dict
+
+def perspective_transform(image, source_points):
+    dest_points = np.float32([[0, 0], [500, 0], [500, 300], [0, 300]])
+    M = cv2.getPerspectiveTransform(source_points, dest_points)
+    dst = cv2.warpPerspective(image, M, (500, 300))
+
+    return dst
+
+def align_image(image, coordinate_dict):
+    if len(coordinate_dict) < 3:
+        raise ValueError('Please try again')
+
+    # convert (xmin, ymin, xmax, ymax) to (x_center, y_center)
+    coordinate_dict = get_center_point(coordinate_dict)
+
+    if len(coordinate_dict) == 3:
+        coordinate_dict = calculate_missed_coord_corner(coordinate_dict)
+
+    top_left_point = coordinate_dict['top_left']
+    top_right_point = coordinate_dict['top_right']
+    bottom_right_point = coordinate_dict['bottom_right']
+    bottom_left_point = coordinate_dict['bottom_left']
+
+    source_points = np.float32([top_left_point, top_right_point, bottom_right_point, bottom_left_point])
+
+    # transform image and crop
+    crop = perspective_transform(image, source_points)
+
+    return crop
+# coord = get_center_point(coordinate_dict)
+# coord1 = calculate_missed_coord_corner(coord)
+# print(coord1)
+crop = align_image(image, coordinate_dict)
 end = time.time()
 print("Estimated time: ", end - start)
-cv2.imwrite('corner_test.png', image)
-cv2.imshow('test', image)
+cv2.imwrite('corner_test.png', crop)
+cv2.imshow('test', crop)
 cv2.waitKey(0)
