@@ -1,0 +1,24 @@
+item {
+  id: 1
+  name: 'num'
+}
+
+item {
+  id: 2
+  name: 'name'
+}
+
+item {
+  id: 3
+  name: 'birth'
+}
+
+item {
+  id: 4
+  name: 'hometown'
+}
+item {
+  id: 5
+  name: 'addr'
+}
+
