@@ -1,7 +1,10 @@
 import numpy as np
 
+from PIL import Image
 from src.detector.detector import Detector
-from src.vietocr.text_recognition import TextRecognition
+# from src.vietocr.text_recognition import TextRecognition
+from vietocr.tool.predictor import Predictor
+from vietocr.tool.config import Cfg
 from src.detector.utils.image_utils import align_image, sort_text
 from src.config import text_detection
 
@@ -16,8 +19,14 @@ class CompletedModel(object):
                                              path_to_labels=text_detection['path_to_labels'],
                                              nms_threshold=text_detection['nms_ths'], 
                                              score_threshold=text_detection['score_ths'])
-        self.text_recognition_model = TextRecognition()
+        # self.text_recognition_model = TextRecognition()
 
+        config = Cfg.load_config_from_name('vgg_transformer')
+        config['weights'] = '/home/whoisltd/detect/src/vietocr/config_text_recognition/transformerocr.pth'
+        config['cnn']['pretrained']=False
+        config['device'] = 'cpu'
+        config['predictor']['beamsearch']=False 
+        self.detector = Predictor(config)
         # init boxes
         self.num_boxes = None
         self.name_boxes = None
@@ -43,11 +52,12 @@ class CompletedModel(object):
     #     cropped_img = align_image(image, coordinate_dict)
 
     #     return cropped_img
-
+    
     def detect_text(self, image):
         # detect text boxes
         detection_boxes, detection_classes, _ = self.text_detection_model.predict(image)
-
+        # print(detection_boxes)
+        # print(detection_classes)
         # sort text boxes according to coordinate
         self.num_boxes, self.name_boxes, self.birth_boxes, self.hometown_boxes, self.addr_boxes = sort_text(detection_boxes, detection_classes)
 
@@ -58,11 +68,11 @@ class CompletedModel(object):
         def crop_and_recog(boxes):
             crop = []
             if len(boxes) == 1:
-                ymin, xmin, ymax, xmax = boxes[0]
+                ymin, xmin, ymax, xmax = boxes[0].astype(np.int32)
                 crop.append(image[ymin:ymax, xmin:xmax])
             else:
                 for box in boxes:
-                    ymin, xmin, ymax, xmax = box
+                    ymin, xmin, ymax, xmax = box.astype(np.int32)
                     crop.append(image[ymin:ymax, xmin:xmax])
 
             return crop
@@ -73,7 +83,9 @@ class CompletedModel(object):
         list_ans.extend(crop_and_recog(self.hometown_boxes))
         list_ans.extend(crop_and_recog(self.addr_boxes))
 
-        result = self.text_recognition_model.predict_on_batch(np.array(list_ans))
+        list_ans = [Image.fromarray(i) for i in list_ans]
+        result = self.detector.predict_batch(list_ans)
+            # result = self.detector.predict(np.array(list_ans))
         field_dict['id'] = result[0]
         field_dict['name'] = ' '.join(result[1:len(self.name_boxes) + 1])
         field_dict['birth'] = result[len(self.name_boxes) + 1]
