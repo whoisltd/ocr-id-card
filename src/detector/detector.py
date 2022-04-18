@@ -81,7 +81,7 @@ class Detector(object):
         self.detection_boxes = np.array(self.detection_boxes)[mask]
         self.detection_classes = np.array(self.detection_classes)[mask]
 
-        self.detection_classes += 1
+        # self.detection_classes += 1
 
         # Convert coordinate to original coordinate
         h, w, _ = original.shape
@@ -91,9 +91,9 @@ class Detector(object):
         self.detection_boxes[:, 3] = self.detection_boxes[:, 3] * w
 
         # Apply non-max suppression
-        self.detection_boxes, self.detection_classes = non_max_suppression_fast(boxes=self.detection_boxes,
-                                                                                labels=self.detection_classes,
-                                                                                overlapThresh=self.nms_threshold)
+        # self.detection_boxes, self.detection_classes = non_max_suppression_fast(boxes=self.detection_boxes,
+        #                                                                         labels=self.detection_classes,
+        #                                                                         overlapThresh=self.nms_threshold)
         return self.detection_boxes, np.array(self.detection_classes).astype("int"), self.category_index
 
     def draw(self, image):
