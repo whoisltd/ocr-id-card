@@ -1,0 +1,40 @@
+item {
+  id: 1
+  name: 'id'
+}
+
+item {
+  id: 2
+  name: 'name'
+}
+
+item {
+  id: 3
+  name: 'birthday'
+}
+
+item {
+  id: 4
+  name: 'sex'
+}
+
+item {
+  id: 5
+  name: 'nation'
+}
+
+item {
+  id: 6
+  name: 'hometown'
+}
+
+item {
+  id: 7
+  name: 'addr'
+}
+
+item {
+  id: 8
+  name: 'exp'
+}
+
