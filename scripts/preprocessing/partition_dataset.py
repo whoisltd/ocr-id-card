@@ -93,3 +93,6 @@ def main():
 
     # Now we are ready to start the iteration
     iterate_dir(args.imageDir, args.outputDir, args.ratio, args.xml)
+    
+if __name__ == '__main__':
+    main()
