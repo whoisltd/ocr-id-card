@@ -7,14 +7,15 @@ from vietocr.tool.predictor import Predictor
 from vietocr.tool.config import Cfg
 from src.detector.utils.image_utils import align_image, sort_text
 from src.config import text_detection
+from src.config import corner_detection
 
 
 class CompletedModel(object):
     def __init__(self):
-    #     self.corner_detection_model = Detector(path_to_model=corner_detection['path_to_model'],
-    #                                            path_to_labels=corner_detection['path_to_labels'],
-    #                                            nms_threshold=corner_detection['nms_ths'], 
-    #                                            score_threshold=corner_detection['score_ths'])
+        self.corner_detection_model = Detector(path_to_model=corner_detection['path_to_model'],
+                                               path_to_labels=corner_detection['path_to_labels'],
+                                               nms_threshold=corner_detection['nms_ths'], 
+                                               score_threshold=corner_detection['score_ths'])
         self.text_detection_model = Detector(path_to_model=text_detection['path_to_model'],
                                              path_to_labels=text_detection['path_to_labels'],
                                              nms_threshold=text_detection['nms_ths'], 
@@ -31,27 +32,30 @@ class CompletedModel(object):
         self.num_boxes = None
         self.name_boxes = None
         self.birth_boxes = None
+        self.sex_boxes = None
+        self.national_boxes = None
         self.hometown_boxes = None
         self.addr_boxes = None
+        self.exp_boxes = None
 
-    # def detect_corner(self, image):
-    #     detection_boxes, detection_classes, category_index = self.corner_detection_model.predict(image)
+    def detect_corner(self, image):
+        detection_boxes, detection_classes, category_index = self.corner_detection_model.predict(image)
 
-    #     coordinate_dict = dict()
-    #     height, width, _ = image.shape
+        coordinate_dict = dict()
+        height, width, _ = image.shape
 
-    #     for i in range(len(detection_classes)):
-    #         label = str(category_index[detection_classes[i]]['name'])
-    #         real_ymin = int(max(1, detection_boxes[i][0]))
-    #         real_xmin = int(max(1, detection_boxes[i][1]))
-    #         real_ymax = int(min(height, detection_boxes[i][2]))
-    #         real_xmax = int(min(width, detection_boxes[i][3]))
-    #         coordinate_dict[label] = (real_xmin, real_ymin, real_xmax, real_ymax)
+        for i in range(len(detection_classes)):
+            label = str(category_index[detection_classes[i]]['name'])
+            real_ymin = int(max(1, detection_boxes[i][0]))
+            real_xmin = int(max(1, detection_boxes[i][1]))
+            real_ymax = int(min(height, detection_boxes[i][2]))
+            real_xmax = int(min(width, detection_boxes[i][3]))
+            coordinate_dict[label] = (real_xmin, real_ymin, real_xmax, real_ymax)
 
-    #     # align image
-    #     cropped_img = align_image(image, coordinate_dict)
+        # align image
+        cropped_img = align_image(image, coordinate_dict)
 
-    #     return cropped_img
+        return cropped_img
     
     def detect_text(self, image):
         # detect text boxes
@@ -59,7 +63,7 @@ class CompletedModel(object):
         # print(detection_boxes)
         # print(detection_classes)
         # sort text boxes according to coordinate
-        self.num_boxes, self.name_boxes, self.birth_boxes, self.hometown_boxes, self.addr_boxes = sort_text(detection_boxes, detection_classes)
+        self.num_boxes, self.name_boxes, self.birth_boxes, self.sex_boxes, self.national_boxes, self.hometown_boxes, self.addr_boxes, self.exp_boxes = sort_text(detection_boxes, detection_classes)
 
     def recognize(self, image):
         field_dict = dict()
@@ -80,23 +84,30 @@ class CompletedModel(object):
         list_ans = list(crop_and_recog(self.num_boxes))
         list_ans.extend(crop_and_recog(self.name_boxes))
         list_ans.extend(crop_and_recog(self.birth_boxes))
+        list_ans.extend(crop_and_recog(self.sex_boxes))
+        list_ans.extend(crop_and_recog(self.national_boxes))
         list_ans.extend(crop_and_recog(self.hometown_boxes))
         list_ans.extend(crop_and_recog(self.addr_boxes))
+        list_ans.extend(crop_and_recog(self.exp_boxes))
 
         list_ans = [Image.fromarray(i) for i in list_ans]
         result = self.detector.predict_batch(list_ans)
             # result = self.detector.predict(np.array(list_ans))
+        print(result)
         field_dict['id'] = result[0]
         field_dict['name'] = ' '.join(result[1:len(self.name_boxes) + 1])
         field_dict['birth'] = result[len(self.name_boxes) + 1]
-        field_dict['hometown'] = ' '.join(result[len(self.name_boxes) + 2: -len(self.hometown_boxes)])
-        field_dict['addr'] = ' '.join(result[-len(self.hometown_boxes):])
+        field_dict['sex'] = result[len(self.birth_boxes) + 2]
+        field_dict['nation'] = result[len(self.sex_boxes) + 3]
+        field_dict['hometown'] = ' '.join(result[len(self.name_boxes) + 4: len(self.name_boxes) + 4 + len(self.hometown_boxes)])
+        field_dict['addr'] = ' '.join(result[len(self.name_boxes) + 4 + len(self.hometown_boxes): -len(self.exp_boxes)])
+        field_dict['exp'] = ' '.join(result[-len(self.hometown_boxes):])
 
         return field_dict
 
     def predict(self, image):
-        # cropped_image = self.detect_corner(image)
-        cropped_image = image
+        image = self.detect_corner(image)
+        # cropped_image = image
         self.detect_text(image)
         # print(self.)
         return self.recognize(image)
