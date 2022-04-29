@@ -20,8 +20,7 @@ class CompletedModel(object):
                                              path_to_labels=text_detection['path_to_labels'],
                                              nms_threshold=text_detection['nms_ths'], 
                                              score_threshold=text_detection['score_ths'])
-        # self.text_recognition_model = TextRecognition()
-
+        #config vietOCR
         config = Cfg.load_config_from_name('vgg_transformer')
         config['weights'] = '/home/whoisltd/detect/src/vietocr/config_text_recognition/transformerocr.pth'
         config['cnn']['pretrained']=False
@@ -60,8 +59,6 @@ class CompletedModel(object):
     def detect_text(self, image):
         # detect text boxes
         detection_boxes, detection_classes, _ = self.text_detection_model.predict(image)
-        # print(detection_boxes)
-        # print(detection_classes)
         # sort text boxes according to coordinate
         self.num_boxes, self.name_boxes, self.birth_boxes, self.sex_boxes, self.national_boxes, self.hometown_boxes, self.addr_boxes, self.exp_boxes = sort_text(detection_boxes, detection_classes)
 
@@ -92,8 +89,6 @@ class CompletedModel(object):
 
         list_ans = [Image.fromarray(i) for i in list_ans]
         result = self.detector.predict_batch(list_ans)
-            # result = self.detector.predict(np.array(list_ans))
-        print(result)
         field_dict['id'] = result[0]
         field_dict['name'] = ' '.join(result[1:len(self.name_boxes) + 1])
         field_dict['birth'] = result[len(self.name_boxes) + 1]
@@ -107,7 +102,5 @@ class CompletedModel(object):
 
     def predict(self, image):
         image = self.detect_corner(image)
-        # cropped_image = image
         self.detect_text(image)
-        # print(self.)
         return self.recognize(image)
