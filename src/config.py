@@ -13,7 +13,5 @@ text_detection = {
 }
 
 text_recognition = {
-    'base_config': '/home/whoisltd/detect/src/vietocr/config_text_recognition/base.yml',
-    'vgg_config': '/home/whoisltd/detect/src/vietocr/config_text_recognition/vgg-transformer.yml',
-    'model_weight': '/home/whoisltd/detect/src/vietocr/config_text_recognition/transformerocr.pth'
+    'weight': '/home/whoisltd/detect/src/vietocr/transformerocr.pth'
 }

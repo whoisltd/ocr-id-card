@@ -6,9 +6,7 @@ from src.detector.detector import Detector
 from vietocr.tool.predictor import Predictor
 from vietocr.tool.config import Cfg
 from src.detector.utils.image_utils import align_image, sort_text
-from src.config import text_detection
-from src.config import corner_detection
-
+from src.config import text_detection, corner_detection, text_recognition
 
 class CompletedModel(object):
     def __init__(self):
@@ -22,11 +20,11 @@ class CompletedModel(object):
                                              score_threshold=text_detection['score_ths'])
         #config vietOCR
         config = Cfg.load_config_from_name('vgg_transformer')
-        config['weights'] = '/home/whoisltd/detect/src/vietocr/config_text_recognition/transformerocr.pth'
+        config['weights'] = text_recognition['weight']
         config['cnn']['pretrained']=False
         config['device'] = 'cpu'
         config['predictor']['beamsearch']=False 
-        self.detector = Predictor(config)
+        self.predictor = Predictor(config)
         # init boxes
         self.num_boxes = None
         self.name_boxes = None
@@ -88,7 +86,7 @@ class CompletedModel(object):
         list_ans.extend(crop_and_recog(self.exp_boxes))
 
         list_ans = [Image.fromarray(i) for i in list_ans]
-        result = self.detector.predict_batch(list_ans)
+        result = self.predictor.predict_batch(list_ans)
         field_dict['id'] = result[0]
         field_dict['name'] = ' '.join(result[1:len(self.name_boxes) + 1])
         field_dict['birth'] = result[len(self.name_boxes) + 1]

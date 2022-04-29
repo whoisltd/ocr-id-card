@@ -27,5 +27,5 @@ def read_image_file(file) -> Image.Image:
 
     return image
 
-image = read_image_file('/home/whoisltd/Desktop/as6.jpg')
+image = read_image_file('/home/whoisltd/Desktop/as12.jpg')
 print(predict(image))
