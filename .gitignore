@@ -1,0 +1,9 @@
+**/__pycache__
+*.pth
+models
+cocoapi
+.vscode
+**/exported-models
+detect_img.py
+note
+.gitignore
