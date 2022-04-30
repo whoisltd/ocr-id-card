@@ -18,7 +18,7 @@ In this task, using SSD like detect corner task but using Resnet FPN for feature
 Extract, get word from the image was cropped from word detection task.
 Using vietOCR to extract information on images. VietOCR is a pre-trained Vietnamese model that was trained on 10m images. 
 [GitHub - pbcquoc/vietocr: Transformer OCR](https://github.com/pbcquoc/vietocr) 
-### Run Locally (python3.9.7)
+## Run Locally (python3.9.7)
 
 Clone the project
 
