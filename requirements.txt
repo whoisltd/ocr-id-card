@@ -66,7 +66,7 @@ kiwisolver==1.4.0
 libclang==13.0.0
 lmdb==1.0.0
 lvis==0.5.3
-lxml==4.8.0
+lxml==4.9.1
 Markdown==3.3.6
 matplotlib==3.5.1
 matplotlib-inline==0.1.3
