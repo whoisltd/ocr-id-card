@@ -56,7 +56,7 @@ importlib-metadata==4.11.3
 ipykernel==6.10.0
 ipython==8.2.0
 jedi==0.18.1
-joblib==1.1.0
+joblib==1.2.0
 jupyter-client==7.2.1
 jupyter-core==4.9.2
 kaggle==1.5.12
