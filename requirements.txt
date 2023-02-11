@@ -54,7 +54,7 @@ imageio==2.16.1
 imgaug==0.4.0
 importlib-metadata==4.11.3
 ipykernel==6.10.0
-ipython==8.2.0
+ipython==8.10.0
 jedi==0.18.1
 joblib==1.2.0
 jupyter-client==7.2.1
