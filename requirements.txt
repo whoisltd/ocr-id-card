@@ -129,7 +129,7 @@ six==1.15.0
 sniffio==1.2.0
 soupsieve==2.3.1
 stack-data==0.2.0
-starlette==0.17.1
+starlette==0.25.0
 tabulate==0.8.9
 tensorboard==2.8.0
 tensorboard-data-server==0.6.1
