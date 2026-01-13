@@ -29,7 +29,7 @@ entrypoints==0.4
 executing==0.8.3
 fastapi==0.75.0
 fastavro==1.4.10
-filelock==3.6.0
+filelock==3.20.3
 flatbuffers==1.12
 fonttools==4.31.2
 funkify==0.4.4
